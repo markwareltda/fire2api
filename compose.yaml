@@ -1,0 +1,20 @@
+services:
+  fire2api:
+    build:
+      context: .
+    image: fire2api:local
+    pull_policy: build
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - fire2api-data:/app/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  fire2api-data:

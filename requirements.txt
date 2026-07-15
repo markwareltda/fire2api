@@ -1,0 +1,299 @@
+# Locked runtime and development dependencies for Fire2API.
+# Regenerate only after reviewing dependency updates.
+
+aiofiles==25.1.0
+    # via nicegui
+aiohappyeyeballs==2.7.1
+    # via aiohttp
+aiohttp==3.14.1
+    # via
+    #   nicegui
+    #   python-socketio
+aiosignal==1.4.0
+    # via aiohttp
+alembic==1.18.5
+    # via Fire2API
+annotated-doc==0.0.4
+    # via fastapi
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.14.2
+    # via
+    #   httpx
+    #   starlette
+    #   watchfiles
+ast-serialize==0.6.0
+    # via mypy
+attrs==26.1.0
+    # via aiohttp
+bidict==0.23.1
+    # via python-socketio
+boolean-py==5.0
+    # via license-expression
+build==1.5.1
+    # via pip-tools
+cachecontrol==0.14.4
+    # via
+    #   cachecontrol
+    #   pip-audit
+certifi==2026.6.17
+    # via
+    #   httpcore
+    #   httpx
+    #   nicegui
+    #   requests
+charset-normalizer==3.4.9
+    # via requests
+click==8.4.2
+    # via
+    #   pip-tools
+    #   uvicorn
+colorama==0.4.6
+    # via
+    #   build
+    #   click
+    #   pytest
+coverage==7.15.1
+    # via
+    #   Fire2API
+    #   pytest-cov
+cyclonedx-python-lib==11.11.0
+    # via pip-audit
+defusedxml==0.7.1
+    # via py-serializable
+docutils==0.23
+    # via nicegui
+fastapi==0.139.0
+    # via
+    #   Fire2API
+    #   nicegui
+filelock==3.29.7
+    # via cachecontrol
+firebird-base==2.0.3
+    # via firebird-driver
+firebird-driver==2.0.3
+    # via
+    #   Fire2API
+    #   sqlalchemy-firebird
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
+greenlet==3.5.3
+    # via sqlalchemy
+h11==0.16.0
+    # via
+    #   httpcore
+    #   nicegui
+    #   uvicorn
+    #   wsproto
+httpcore==1.0.9
+    # via httpx
+httptools==0.8.0
+    # via uvicorn
+httpx==0.28.1
+    # via nicegui
+idna==3.18
+    # via
+    #   anyio
+    #   httpx
+    #   nicegui
+    #   requests
+    #   yarl
+ifaddr==0.2.0
+    # via nicegui
+iniconfig==2.3.0
+    # via pytest
+itsdangerous==2.2.0
+    # via nicegui
+jinja2==3.1.6
+    # via nicegui
+librt==0.13.0
+    # via mypy
+license-expression==30.4.4
+    # via cyclonedx-python-lib
+lxml==6.1.1
+    # via
+    #   lxml-html-clean
+    #   nicegui
+lxml-html-clean==0.4.5
+    # via nicegui
+mako==1.3.12
+    # via alembic
+markdown-it-py==4.2.0
+    # via rich
+markdown2==2.5.5
+    # via nicegui
+markupsafe==3.0.3
+    # via
+    #   jinja2
+    #   mako
+mdurl==0.1.2
+    # via markdown-it-py
+msgpack==1.2.1
+    # via cachecontrol
+multidict==6.7.1
+    # via
+    #   aiohttp
+    #   yarl
+mypy==2.3.0
+    # via Fire2API
+mypy-extensions==1.1.0
+    # via mypy
+nicegui==3.14.0
+    # via Fire2API
+orjson==3.11.9
+    # via nicegui
+packageurl-python==0.17.6
+    # via cyclonedx-python-lib
+packaging==26.2
+    # via
+    #   build
+    #   pip-audit
+    #   pip-requirements-parser
+    #   pytest
+    #   sqlalchemy-firebird
+    #   wheel
+pathspec==1.1.1
+    # via mypy
+pip-api==0.0.34
+    # via pip-audit
+pip-audit==2.10.1
+    # via Fire2API
+pip-requirements-parser==32.0.1
+    # via pip-audit
+pip-tools==7.5.3
+    # via Fire2API
+platformdirs==4.10.0
+    # via pip-audit
+pluggy==1.6.0
+    # via
+    #   pytest
+    #   pytest-cov
+propcache==0.5.2
+    # via
+    #   aiohttp
+    #   yarl
+protobuf==5.29.6
+    # via firebird-base
+py-serializable==2.1.0
+    # via cyclonedx-python-lib
+pydantic==2.13.4
+    # via
+    #   fastapi
+    #   pydantic-settings
+pydantic-core==2.46.4
+    # via
+    #   nicegui
+    #   pydantic
+pydantic-settings==2.14.2
+    # via Fire2API
+pygments==2.20.0
+    # via
+    #   nicegui
+    #   pytest
+    #   rich
+pyparsing==3.3.2
+    # via pip-requirements-parser
+pyproject-hooks==1.2.0
+    # via
+    #   build
+    #   pip-tools
+pytest==9.1.1
+    # via
+    #   Fire2API
+    #   pytest-asyncio
+    #   pytest-cov
+pytest-asyncio==1.4.0
+    # via Fire2API
+pytest-cov==7.1.0
+    # via Fire2API
+python-dateutil==2.9.0.post0
+    # via firebird-driver
+python-dotenv==1.2.2
+    # via
+    #   nicegui
+    #   pydantic-settings
+    #   uvicorn
+python-engineio==4.13.3
+    # via
+    #   nicegui
+    #   python-socketio
+python-multipart==0.0.32
+    # via nicegui
+python-socketio==5.16.3
+    # via nicegui
+pyyaml==6.0.3
+    # via uvicorn
+requests==2.34.2
+    # via
+    #   cachecontrol
+    #   pip-audit
+rich==15.0.0
+    # via pip-audit
+ruff==0.15.21
+    # via Fire2API
+simple-websocket==1.1.0
+    # via python-engineio
+six==1.17.0
+    # via python-dateutil
+sortedcontainers==2.4.0
+    # via cyclonedx-python-lib
+sqlalchemy==2.0.51
+    # via
+    #   Fire2API
+    #   alembic
+    #   sqlalchemy-firebird
+sqlalchemy-firebird==2.2.0
+    # via Fire2API
+starlette==1.3.1
+    # via
+    #   fastapi
+    #   nicegui
+tinycss2==1.5.1
+    # via nicegui
+tomli==2.4.1
+    # via pip-audit
+tomli-w==1.2.0
+    # via pip-audit
+types-python-dateutil==2.9.0.20260518
+    # via Fire2API
+typing-extensions==4.16.0
+    # via
+    #   alembic
+    #   fastapi
+    #   mypy
+    #   nicegui
+    #   pydantic
+    #   pydantic-core
+    #   sqlalchemy
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via
+    #   fastapi
+    #   pydantic
+    #   pydantic-settings
+urllib3==2.7.0
+    # via requests
+uvicorn==0.51.0
+    # via
+    #   Fire2API
+    #   nicegui
+watchfiles==1.2.0
+    # via
+    #   nicegui
+    #   uvicorn
+webencodings==0.5.1
+    # via tinycss2
+websockets==16.1
+    # via uvicorn
+wheel==0.47.0
+    # via pip-tools
+wsproto==1.3.2
+    # via simple-websocket
+yarl==1.24.2
+    # via aiohttp
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip
+# setuptools
