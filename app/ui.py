@@ -5,6 +5,7 @@ import hmac
 import json
 import logging
 import time
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI
@@ -1609,6 +1610,6 @@ def install_ui(fastapi_app: FastAPI) -> None:
         fastapi_app,
         storage_secret=storage_secret,
         title=settings.api_title,
-        favicon="🔥",
+        favicon=Path("app/assets/fire2api-logo.svg"),
         language="pt-BR",
     )

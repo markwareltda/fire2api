@@ -1,5 +1,6 @@
 <div align="center">
 
+<img src="app/assets/fire2api-logo.svg" alt="Logo Fire2API" width="72">
 <h1>Fire2API</h1>
 
 <p><strong>Turn parameterized Firebird commands into authenticated HTTP APIs, without building a custom backend.</strong></p>

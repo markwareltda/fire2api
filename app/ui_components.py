@@ -14,18 +14,18 @@ THEME_CSS = """
   font-display: swap;
 }
 :root {
-  --f2-bg: #060b14;
-  --f2-surface: #0d1522;
-  --f2-surface-raised: #121c2b;
-  --f2-surface-muted: #0a111d;
-  --f2-border: #263449;
-  --f2-border-strong: #394a63;
-  --f2-primary: #4f8cff;
-  --f2-primary-soft: #172b4d;
+  --f2-bg: #071226;
+  --f2-surface: #0c1932;
+  --f2-surface-raised: #112241;
+  --f2-surface-muted: #081329;
+  --f2-border: #223552;
+  --f2-border-strong: #365177;
+  --f2-primary: #3b82f6;
+  --f2-primary-soft: #132d56;
   --f2-text: #f1f5f9;
   --f2-muted: #9aa9bc;
   --f2-subtle: #718096;
-  --f2-positive: #34d399;
+  --f2-positive: #20a575;
   --f2-negative: #fb7185;
   --f2-warning: #fbbf24;
 }
@@ -54,7 +54,7 @@ body { font-size: 14px; line-height: 1.5; }
   color: var(--f2-text) !important;
 }
 .f2-sidebar {
-  background: #080e19 !important;
+  background: #050d1c !important;
   border-right: 1px solid var(--f2-border) !important;
 }
 .f2-mobile-header {
@@ -134,7 +134,7 @@ body { font-size: 14px; line-height: 1.5; }
 .q-expansion-item { border-radius: 8px; background: var(--f2-surface-muted); }
 .q-expansion-item__container > .q-item { min-height: 44px; }
 .text-slate-400 { color: var(--f2-muted) !important; }
-*:focus-visible { outline: 2px solid #7da7ff !important; outline-offset: 2px; }
+*:focus-visible { outline: 2px solid #60a5fa !important; outline-offset: 2px; }
 @media (max-width: 1023px) {
   .f2-page { padding: 24px; }
   .f2-sticky-bar { top: 64px; }
@@ -183,9 +183,9 @@ def install_theme() -> None:
     ui.add_css(THEME_CSS)
     ui.dark_mode().enable()
     ui.colors(
-        primary="#4f8cff",
+        primary="#3b82f6",
         secondary="#7c8da5",
-        positive="#34d399",
+        positive="#20a575",
         negative="#fb7185",
         warning="#fbbf24",
     )
@@ -193,10 +193,9 @@ def install_theme() -> None:
 
 def brand(*, compact: bool = False) -> None:
     with ui.row().classes("items-center gap-3 flex-nowrap"):
-        with ui.element("div").classes(
-            "w-9 h-9 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center"
-        ):
-            ui.icon("local_fire_department").classes("text-2xl")
+        ui.image("/assets/fire2api-logo.svg").props(
+            'alt="Fire2API" fit=contain'
+        ).classes("w-9 h-9 shrink-0")
         with ui.column().classes("gap-0 min-w-0"):
             ui.label("Fire2API").classes("text-lg font-semibold tracking-tight text-slate-100")
             if not compact:
