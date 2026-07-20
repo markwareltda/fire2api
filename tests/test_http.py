@@ -6,13 +6,16 @@ from fastapi.testclient import TestClient
 
 from app.core.access_key_service import AccessKeyService
 from app.core.query_service import QueryExecutionResult
+from app.core.settings import API_VERSION
 from app.main import app
 from tests.conftest import TEST_ADMIN_KEY
 
 
 def test_public_system_admin_auth_and_no_report_routes():
     with TestClient(app) as client:
-        assert client.get("/health").status_code == 200
+        health = client.get("/health")
+        assert health.status_code == 200
+        assert health.json()["version"] == API_VERSION
         assert client.get("/admin").status_code == 200
         assert client.get("/api/base/admin/query").status_code == 401
         response = client.get(
@@ -21,6 +24,7 @@ def test_public_system_admin_auth_and_no_report_routes():
         assert response.status_code == 200
         assert client.get("/api/base/report/queries").status_code == 404
         schema = client.get("/openapi.json").json()
+        assert schema["info"]["version"] == API_VERSION
         assert all("/api/base/admin" not in path for path in schema["paths"])
         assert all("/api/base/report" not in path for path in schema["paths"])
 

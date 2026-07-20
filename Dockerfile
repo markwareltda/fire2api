@@ -19,7 +19,7 @@ RUN python -m pip install --requirement requirements-runtime.txt
 
 COPY --chown=fire2api:fire2api app ./app
 COPY --chown=fire2api:fire2api migrations ./migrations
-COPY --chown=fire2api:fire2api alembic.ini main.py ./
+COPY --chown=fire2api:fire2api alembic.ini main.py pyproject.toml ./
 RUN mkdir -p /app/data && chown fire2api:fire2api /app/data \
     && test -z "$(find /app/data -mindepth 1 -print -quit)"
 

@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import tomllib
+
 import pytest
 from pydantic import ValidationError
 from sqlalchemy import create_engine, inspect
 
 from app.core.access_key_service import AccessKeyService
 from app.core.migrations import current_revision, head_revision, upgrade_metastore
-from app.core.settings import INVALID_ADMIN_API_KEY, Settings
+from app.core.settings import (
+    API_VERSION,
+    INVALID_ADMIN_API_KEY,
+    PYPROJECT_PATH,
+    Settings,
+    load_project_version,
+)
 
 
 def test_empty_database_migrates_and_second_upgrade_is_idempotent():
@@ -65,3 +73,33 @@ def test_insecure_example_admin_key_and_invalid_timeout_ceiling_are_rejected():
             query_timeout_seconds=181,
             query_timeout_max_seconds=180,
         )
+
+
+def test_runtime_version_comes_from_pyproject_and_cannot_be_overridden(monkeypatch):
+    with PYPROJECT_PATH.open("rb") as pyproject_file:
+        expected = tomllib.load(pyproject_file)["project"]["version"]
+
+    monkeypatch.setenv("API_VERSION", "99.99.99")
+    settings = Settings(admin_api_key="valid-admin-key-with-at-least-32-characters")
+
+    assert API_VERSION == expected
+    assert settings.api_version == expected
+
+    dockerfile = PYPROJECT_PATH.with_name("Dockerfile").read_text(encoding="utf-8")
+    assert "alembic.ini main.py pyproject.toml" in dockerfile
+
+
+def test_project_version_loader_rejects_missing_or_invalid_metadata(tmp_path):
+    missing = tmp_path / "missing.toml"
+    with pytest.raises(RuntimeError, match="Não foi possível carregar"):
+        load_project_version(missing)
+
+    invalid = tmp_path / "invalid.toml"
+    invalid.write_text("[project\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="Não foi possível carregar"):
+        load_project_version(invalid)
+
+    without_version = tmp_path / "without-version.toml"
+    without_version.write_text('[project]\nname = "synthetic"\n', encoding="utf-8")
+    with pytest.raises(RuntimeError, match=r"\[project\]\.version"):
+        load_project_version(without_version)

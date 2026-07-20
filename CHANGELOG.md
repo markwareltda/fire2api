@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Versão exibida pelo runtime, OpenAPI, health check e painel carregada diretamente de `[project].version` no `pyproject.toml`.
+
 ## 0.0.1 - 2026-07-15
 
 - Script independente para incrementar `project.version`, criar o commit de versão e adicionar a tag Git correspondente com validação de árvore limpa.

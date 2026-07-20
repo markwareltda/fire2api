@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tomllib
 from functools import lru_cache
 from pathlib import Path
 
@@ -8,8 +9,25 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 APP_ID = "fire2api"
 API_TITLE = "Fire2API by Markware"
-API_VERSION = "0.0.1"
 INVALID_ADMIN_API_KEY = "replace-with-at-least-32-random-characters"
+PYPROJECT_PATH = Path(__file__).resolve().parents[2] / "pyproject.toml"
+
+
+def load_project_version(pyproject_path: Path = PYPROJECT_PATH) -> str:
+    try:
+        with pyproject_path.open("rb") as pyproject_file:
+            document = tomllib.load(pyproject_file)
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise RuntimeError(f"Não foi possível carregar a versão de {pyproject_path}.") from exc
+
+    project = document.get("project")
+    version = project.get("version") if isinstance(project, dict) else None
+    if not isinstance(version, str) or not version:
+        raise RuntimeError(f"A chave [project].version não foi encontrada em {pyproject_path}.")
+    return version
+
+
+API_VERSION = load_project_version()
 
 
 class Settings(BaseSettings):
@@ -17,7 +35,6 @@ class Settings(BaseSettings):
 
     app_id: str = APP_ID
     api_title: str = API_TITLE
-    api_version: str = API_VERSION
     api_debug: bool = False
     app_env: str = "production"
     host: str = "0.0.0.0"
@@ -108,6 +125,10 @@ class Settings(BaseSettings):
     @property
     def sqlite_path(self) -> Path:
         return Path(self.sqlite_db_path).expanduser().resolve()
+
+    @property
+    def api_version(self) -> str:
+        return API_VERSION
 
     @property
     def cors_origins(self) -> list[str]:
