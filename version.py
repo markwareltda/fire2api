@@ -177,7 +177,7 @@ def commit_version(project_dir: Path, pyproject_path: Path, original: str, new: 
     try:
         run_git(["add", PYPROJECT_NAME], cwd=project_dir)
         run_git(
-            ["commit", "-m", f"chore: bump version to {new}"],
+            ["commit", "-m", f"v{new}"],
             cwd=project_dir,
         )
     except subprocess.CalledProcessError as exc:

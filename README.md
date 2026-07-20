@@ -139,7 +139,7 @@ python version.py --patch
 python version.py 1.2.3
 ```
 
-The options are mutually exclusive. The helper updates `[project].version` in `pyproject.toml`, creates a commit named `chore: bump version to X.Y.Z`, and adds the local tag `vX.Y.Z`. It does not push the commit or tag.
+The options are mutually exclusive. The helper updates `[project].version` in `pyproject.toml`, creates a commit named `vX.Y.Z`, and adds the local tag `vX.Y.Z`. It does not push the commit or tag.
 
 ## Updating
 

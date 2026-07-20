@@ -127,7 +127,7 @@ def test_complete_version_flow_in_temporary_repository(
     assert version_tool.run_git(["status", "--porcelain"], cwd=project_dir).stdout == ""
     assert (
         version_tool.run_git(["log", "-1", "--pretty=%s"], cwd=project_dir).stdout.strip()
-        == f"chore: bump version to {expected}"
+        == f"v{expected}"
     )
     assert version_tool.run_git(["tag", "--list"], cwd=project_dir).stdout.strip() == f"v{expected}"
 
@@ -191,7 +191,7 @@ def test_commit_failure_restores_file_and_staging(
         ["status", "--porcelain=v1", "--untracked-files=normal"],
         ["rev-parse", "--verify", "--quiet", "refs/tags/v0.0.2"],
         ["add", "pyproject.toml"],
-        ["commit", "-m", "chore: bump version to 0.0.2"],
+        ["commit", "-m", "v0.0.2"],
         ["restore", "--staged", "--", "pyproject.toml"],
     ]
     assert "commit hook failed" in capsys.readouterr().err
