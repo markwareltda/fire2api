@@ -27,6 +27,7 @@ from .ui_components import (
     brand,
     confirm_dialog,
     empty_state,
+    form_field,
     format_timestamp,
     install_theme,
     method_badge,
@@ -100,19 +101,19 @@ def install_ui(fastapi_app: FastAPI) -> None:
                     ui.label(
                         "Use a chave administrativa configurada nesta instância."
                     ).classes("text-sm text-slate-400")
-                key = (
-                    ui.input(
-                        "Chave administrativa",
-                        placeholder="Cole sua ADMIN_API_KEY",
-                        password=True,
-                        password_toggle_button=True,
+                with form_field("Chave administrativa"):
+                    key = (
+                        ui.input(
+                            placeholder="Cole sua ADMIN_API_KEY",
+                            password=True,
+                            password_toggle_button=True,
+                        )
+                        .props(
+                            'outlined dense autofocus autocomplete=current-password '
+                            'aria-label="Chave administrativa"'
+                        )
+                        .classes("w-full")
                     )
-                    .props(
-                        'outlined stack-label autofocus autocomplete=current-password '
-                        'aria-label="Chave administrativa"'
-                    )
-                    .classes("w-full")
-                )
                 key.mark("login-key")
                 error = ui.label().props('role="alert" aria-live="polite"').classes(
                     "text-sm text-red-300 min-h-5"
@@ -295,9 +296,10 @@ def install_ui(fastapi_app: FastAPI) -> None:
                             ui.label(f"/api{current['route_path']}").classes(
                                 "font-mono text-sm text-slate-400 truncate"
                             )
-                    ui.button(icon="close", on_click=dialog.close).props(
+                    close_button = ui.button(icon="close", on_click=dialog.close).props(
                         'flat round aria-label="Fechar teste"'
                     )
+                    close_button.mark("route-test-close")
                 with ui.column().classes("w-full gap-5 p-5 sm:p-6"):
                     alert(
                         "Teste seguro: a execução administrativa sempre faz rollback.",
@@ -344,27 +346,30 @@ def install_ui(fastapi_app: FastAPI) -> None:
                                                     ),
                                                 )
                                             elif item["param_type"] in {"integer", "float"}:
-                                                control = ui.number(
-                                                    field_label,
-                                                    value=(
-                                                        float(default)
-                                                        if default not in (None, "")
-                                                        else None
-                                                    ),
-                                                    format=(
-                                                        "%.0f"
-                                                        if item["param_type"] == "integer"
-                                                        else "%.6f"
-                                                    ),
-                                                ).props("outlined")
+                                                with form_field(field_label):
+                                                    control = ui.number(
+                                                        value=(
+                                                            float(default)
+                                                            if default not in (None, "")
+                                                            else None
+                                                        ),
+                                                        format=(
+                                                            "%.0f"
+                                                            if item["param_type"] == "integer"
+                                                            else "%.6f"
+                                                        ),
+                                                    ).props(
+                                                        f'outlined dense aria-label="{field_label}"'
+                                                    )
                                             else:
-                                                control = ui.input(
-                                                    field_label, value=default
-                                                ).props("outlined")
-                                                if item["param_type"] == "date":
-                                                    control.props("type=date")
-                                                elif item["param_type"] == "datetime":
-                                                    control.props("type=datetime-local")
+                                                with form_field(field_label):
+                                                    control = ui.input(value=default).props(
+                                                        f'outlined dense aria-label="{field_label}"'
+                                                    )
+                                                    if item["param_type"] == "date":
+                                                        control.props("type=date")
+                                                    elif item["param_type"] == "datetime":
+                                                        control.props("type=datetime-local")
                                             control.classes("w-full")
                                             controls[item["name"]] = control
 
@@ -377,23 +382,24 @@ def install_ui(fastapi_app: FastAPI) -> None:
                                     with ui.element("div").classes(
                                         "grid grid-cols-2 gap-3 w-full"
                                     ):
-                                        limit = ui.number(
-                                            "LIMIT",
-                                            value=settings.query_max_rows_hard,
-                                            format="%.0f",
-                                        ).props(
-                                            f"outlined min=1 max={settings.query_max_rows_hard} step=1"
+                                        with form_field("LIMIT"):
+                                            limit = ui.number(
+                                                value=settings.query_max_rows_hard,
+                                                format="%.0f",
+                                            ).props(
+                                                "outlined dense aria-label=LIMIT "
+                                                f"min=1 max={settings.query_max_rows_hard} step=1"
+                                            )
+                                        with form_field("OFFSET"):
+                                            offset = ui.number(value=0, format="%.0f").props(
+                                                "outlined dense aria-label=OFFSET min=0 step=1"
+                                            )
+                                    with form_field("ORDER_BY"):
+                                        order_by = (
+                                            ui.input(placeholder="NOME ASC, ID DESC")
+                                            .props("outlined dense aria-label=ORDER_BY")
+                                            .classes("w-full")
                                         )
-                                        offset = ui.number(
-                                            "OFFSET", value=0, format="%.0f"
-                                        ).props("outlined min=0 step=1")
-                                    order_by = (
-                                        ui.input(
-                                            "ORDER_BY", placeholder="NOME ASC, ID DESC"
-                                        )
-                                        .props("outlined stack-label")
-                                        .classes("w-full")
-                                    )
 
                             async def run() -> None:
                                 if not require_authenticated():
@@ -661,6 +667,19 @@ def install_ui(fastapi_app: FastAPI) -> None:
                 set_value(key, value)
                 schedule_detection()
 
+            def remove_route() -> None:
+                if not require_authenticated():
+                    return
+                query_id = state.get("query_id")
+                if query_id is None:
+                    return
+                QueryService.delete_query(query_id)
+                record_admin_audit("query.delete", "query", query_id)
+                dynamic_loader.reload_app(fastapi_app)
+                state["dirty"] = False
+                apply_navigation("routes")
+                ui.notify("Rota excluída", type="positive")
+
             with ui.element("div").classes(
                 "f2-sticky-bar w-full flex items-center gap-3 flex-wrap"
             ):
@@ -741,41 +760,41 @@ def install_ui(fastapi_app: FastAPI) -> None:
                     with ui.element("div").classes(
                         "grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_180px] gap-4 w-full"
                     ):
-                        path = (
-                            ui.input(
-                                "Caminho",
-                                value=state["route_path"],
-                                placeholder="/clientes/{ID}",
-                                on_change=lambda e: set_detection_value(
-                                    "route_path", e.value
-                                ),
+                        with form_field("Caminho"):
+                            path = (
+                                ui.input(
+                                    value=state["route_path"],
+                                    placeholder="/clientes/{ID}",
+                                    on_change=lambda e: set_detection_value(
+                                        "route_path", e.value
+                                    ),
+                                )
+                                .props('outlined dense aria-label="Caminho"')
+                                .classes("w-full")
                             )
-                            .props("outlined stack-label")
-                            .classes("w-full")
-                        )
                         path.mark("route-path")
-                        ui.select(
-                            ["GET", "POST", "PUT", "PATCH", "DELETE"],
-                            value=state["method"],
-                            label="Método",
-                            on_change=lambda e: set_detection_value(
-                                "method", e.value
-                            ),
-                        ).props("outlined").classes("w-full")
+                        with form_field("Método"):
+                            ui.select(
+                                ["GET", "POST", "PUT", "PATCH", "DELETE"],
+                                value=state["method"],
+                                on_change=lambda e: set_detection_value(
+                                    "method", e.value
+                                ),
+                            ).props('outlined dense aria-label="Método"').classes("w-full")
                     with ui.element("div").classes(
                         "grid grid-cols-1 md:grid-cols-2 gap-4 w-full"
                     ):
-                        ui.input(
-                            "Descrição",
-                            value=state["description"],
-                            on_change=lambda e: set_value("description", e.value or ""),
-                        ).props("outlined stack-label").classes("w-full")
-                        ui.input(
-                            "Tags",
-                            value=state["tags"],
-                            placeholder="clientes, financeiro",
-                            on_change=lambda e: set_value("tags", e.value or ""),
-                        ).props("outlined stack-label").classes("w-full")
+                        with form_field("Descrição"):
+                            ui.input(
+                                value=state["description"],
+                                on_change=lambda e: set_value("description", e.value or ""),
+                            ).props('outlined dense aria-label="Descrição"').classes("w-full")
+                        with form_field("Tags"):
+                            ui.input(
+                                value=state["tags"],
+                                placeholder="clientes, financeiro",
+                                on_change=lambda e: set_value("tags", e.value or ""),
+                            ).props('outlined dense aria-label="Tags"').classes("w-full")
                     ui.switch(
                         "Rota ativa",
                         value=state["is_active"],
@@ -900,36 +919,42 @@ def install_ui(fastapi_app: FastAPI) -> None:
                                     with ui.element("div").classes(
                                         "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 w-full"
                                     ):
-                                        ui.input(
-                                            "Nome",
-                                            value=item.get("name", ""),
-                                            on_change=lambda e, row=item: update_parameter(
-                                                row, "name", e.value
-                                            ),
-                                        ).props("outlined dense").classes("w-full")
-                                        source = ui.select(
-                                            ["path", "query", "body"],
-                                            value=item.get("source", "query"),
-                                            label="Origem",
-                                            on_change=lambda e, row=item: update_parameter(
-                                                row, "source", e.value
-                                            ),
-                                        ).props("outlined dense").classes("w-full")
-                                        ui.select(
-                                            [
-                                                "string",
-                                                "integer",
-                                                "float",
-                                                "boolean",
-                                                "date",
-                                                "datetime",
-                                            ],
-                                            value=item.get("param_type", "string"),
-                                            label="Tipo",
-                                            on_change=lambda e, row=item: update_parameter(
-                                                row, "param_type", e.value
-                                            ),
-                                        ).props("outlined dense").classes("w-full")
+                                        with form_field("Nome"):
+                                            ui.input(
+                                                value=item.get("name", ""),
+                                                on_change=lambda e, row=item: update_parameter(
+                                                    row, "name", e.value
+                                                ),
+                                            ).props(
+                                                'outlined dense aria-label="Nome"'
+                                            ).classes("w-full")
+                                        with form_field("Origem"):
+                                            source = ui.select(
+                                                ["path", "query", "body"],
+                                                value=item.get("source", "query"),
+                                                on_change=lambda e, row=item: update_parameter(
+                                                    row, "source", e.value
+                                                ),
+                                            ).props(
+                                                'outlined dense aria-label="Origem"'
+                                            ).classes("w-full")
+                                        with form_field("Tipo"):
+                                            ui.select(
+                                                [
+                                                    "string",
+                                                    "integer",
+                                                    "float",
+                                                    "boolean",
+                                                    "date",
+                                                    "datetime",
+                                                ],
+                                                value=item.get("param_type", "string"),
+                                                on_change=lambda e, row=item: update_parameter(
+                                                    row, "param_type", e.value
+                                                ),
+                                            ).props(
+                                                'outlined dense aria-label="Tipo"'
+                                            ).classes("w-full")
                                         required = ui.switch(
                                             "Obrigatório",
                                             value=bool(item.get("required", False)),
@@ -943,27 +968,33 @@ def install_ui(fastapi_app: FastAPI) -> None:
                                         with ui.element("div").classes(
                                             "grid grid-cols-1 md:grid-cols-3 gap-3 w-full p-3 pt-0"
                                         ):
-                                            ui.input(
-                                                "Valor padrão",
-                                                value=item.get("default_value") or "",
-                                                on_change=lambda e, row=item: update_parameter(
-                                                    row, "default_value", e.value or None
-                                                ),
-                                            ).props("outlined dense").classes("w-full")
-                                            ui.input(
-                                                "Regex",
-                                                value=item.get("validation_rule") or "",
-                                                on_change=lambda e, row=item: update_parameter(
-                                                    row, "validation_rule", e.value or None
-                                                ),
-                                            ).props("outlined dense").classes("w-full")
-                                            ui.input(
-                                                "Descrição",
-                                                value=item.get("description") or "",
-                                                on_change=lambda e, row=item: update_parameter(
-                                                    row, "description", e.value or None
-                                                ),
-                                            ).props("outlined dense").classes("w-full")
+                                            with form_field("Valor padrão"):
+                                                ui.input(
+                                                    value=item.get("default_value") or "",
+                                                    on_change=lambda e, row=item: update_parameter(
+                                                        row, "default_value", e.value or None
+                                                    ),
+                                                ).props(
+                                                    'outlined dense aria-label="Valor padrão"'
+                                                ).classes("w-full")
+                                            with form_field("Regex"):
+                                                ui.input(
+                                                    value=item.get("validation_rule") or "",
+                                                    on_change=lambda e, row=item: update_parameter(
+                                                        row, "validation_rule", e.value or None
+                                                    ),
+                                                ).props(
+                                                    'outlined dense aria-label="Regex"'
+                                                ).classes("w-full")
+                                            with form_field("Descrição"):
+                                                ui.input(
+                                                    value=item.get("description") or "",
+                                                    on_change=lambda e, row=item: update_parameter(
+                                                        row, "description", e.value or None
+                                                    ),
+                                                ).props(
+                                                    'outlined dense aria-label="Descrição"'
+                                                ).classes("w-full")
                                     if (
                                         item.get("source") == "path"
                                         and item.get("name") in state["detected_names"]
@@ -972,6 +1003,31 @@ def install_ui(fastapi_app: FastAPI) -> None:
                                         required.disable()
 
                     parameter_cards()
+
+                if state.get("query_id") is not None:
+                    with section_card("f2-danger-zone"):
+                        with ui.row().classes(
+                            "w-full items-center justify-between gap-4 flex-wrap"
+                        ):
+                            with ui.column().classes("gap-1 min-w-0 grow"):
+                                ui.label("Zona de perigo").classes(
+                                    "text-lg font-semibold text-red-200"
+                                )
+                                ui.label(
+                                    "A exclusão remove permanentemente a rota e seus parâmetros."
+                                ).classes("text-sm text-slate-400")
+                            delete_button = ui.button(
+                                "Excluir rota",
+                                icon="delete_outline",
+                                on_click=lambda: confirm_dialog(
+                                    "Excluir rota?",
+                                    f"A rota {state['method']} {state['route_path']} será "
+                                    "removida permanentemente.",
+                                    confirm_label="Excluir permanentemente",
+                                    on_confirm=remove_route,
+                                ),
+                            ).props("outline no-caps color=negative")
+                            delete_button.mark("route-delete")
 
             def synchronize_parameters() -> None:
                 detected = QueryService.detect_parameters(
@@ -1021,22 +1077,30 @@ def install_ui(fastapi_app: FastAPI) -> None:
             with ui.element("div").classes(
                 "grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_160px_160px] gap-3 w-full mb-4"
             ):
-                search = (
-                    ui.input(
-                        "Buscar",
-                        placeholder="Caminho, método ou tag",
+                with form_field("Buscar"):
+                    search = (
+                        ui.input(
+                            placeholder="Caminho, método ou tag",
+                            on_change=lambda _: route_list.refresh(),
+                        )
+                        .props('outlined dense clearable aria-label="Buscar rotas"')
+                        .classes("w-full")
                     )
-                    .props('outlined stack-label clearable aria-label="Buscar rotas"')
-                    .classes("w-full")
-                )
-                method_filter = ui.select(
-                    ["Todos", "GET", "POST", "PUT", "PATCH", "DELETE"],
-                    value="Todos",
-                    label="Método",
-                ).props("outlined")
-                status_filter = ui.select(
-                    ["Todos", "Ativas", "Inativas"], value="Todos", label="Status"
-                ).props("outlined")
+                    search.mark("route-search")
+                with form_field("Método"):
+                    method_filter = ui.select(
+                        ["Todos", "GET", "POST", "PUT", "PATCH", "DELETE"],
+                        value="Todos",
+                        on_change=lambda _: route_list.refresh(),
+                    ).props('outlined dense aria-label="Filtrar por método"')
+                    method_filter.mark("route-method-filter")
+                with form_field("Status"):
+                    status_filter = ui.select(
+                        ["Todos", "Ativas", "Inativas"],
+                        value="Ativas",
+                        on_change=lambda _: route_list.refresh(),
+                    ).props('outlined dense aria-label="Filtrar por status"')
+                    status_filter.mark("route-status-filter")
 
             @ui.refreshable
             def route_list() -> None:
@@ -1060,64 +1124,57 @@ def install_ui(fastapi_app: FastAPI) -> None:
                         icon="route",
                     )
                     return
-                with ui.column().classes("w-full gap-3"):
+                with ui.element("div").classes("f2-route-list w-full"):
                     for item in items:
-                        with ui.card().classes(
-                            "f2-card f2-card-flat f2-route-card w-full p-4 sm:p-5 gap-3"
-                        ):
-                            with ui.row().classes("w-full items-center gap-3 flex-wrap"):
+                        description = item.get("description") or "Sem descrição"
+                        tags = [
+                            tag.strip()
+                            for tag in (item.get("tags") or "").split(",")
+                            if tag.strip()
+                        ]
+                        with ui.element("div").classes("f2-route-row"):
+                            with ui.element("div").classes("f2-route-method"):
                                 method_badge(item["method"])
-                                ui.label(item["route_path"]).classes(
-                                    "font-mono text-base font-medium grow min-w-0 break-all"
-                                )
+                            ui.label(item["route_path"]).classes("f2-route-path")
+                            ui.label(description).classes(
+                                "f2-route-description text-sm text-slate-300"
+                            ).tooltip(description)
+                            with ui.element("div").classes("f2-route-status"):
                                 ui.badge(
                                     "Ativa" if item["is_active"] else "Inativa",
                                     color="positive" if item["is_active"] else "grey",
                                 ).props("outline")
-                                ui.button(
+                            with ui.row().classes(
+                                "f2-route-tags items-center gap-1 flex-nowrap"
+                            ):
+                                if tags:
+                                    ui.badge(tags[0], color="grey").props("outline")
+                                    if len(tags) > 1:
+                                        ui.badge(f"+{len(tags) - 1}", color="grey").props(
+                                            "outline"
+                                        )
+                                else:
+                                    ui.label("Sem tags").classes("text-xs text-slate-500")
+                            with ui.row().classes(
+                                "f2-route-actions items-center gap-2 flex-nowrap"
+                            ):
+                                test_button = ui.button(
                                     "Testar",
                                     icon="play_arrow",
                                     on_click=lambda _, q=item: test_dialog(q),
-                                ).props("outline no-caps")
-                                ui.button(
-                                    "Editar",
-                                    icon="edit",
-                                    on_click=lambda _, q=item: start_editor(q),
-                                ).props("flat no-caps")
-
-                                def remove(selected: dict[str, Any] = item) -> None:
-                                    if not require_authenticated():
-                                        return
-                                    QueryService.delete_query(selected["id"])
-                                    record_admin_audit(
-                                        "query.delete", "query", selected["id"]
-                                    )
-                                    dynamic_loader.reload_app(fastapi_app)
-                                    ui.notify("Rota excluída", type="positive")
-                                    route_list.refresh()
-
-                                ui.button(
-                                    icon="delete_outline",
-                                    on_click=lambda _, q=item: confirm_dialog(
-                                        "Excluir rota?",
-                                        f"A rota {q['method']} {q['route_path']} será removida permanentemente.",
-                                        confirm_label="Excluir rota",
-                                        on_confirm=lambda: remove(q),
-                                    ),
-                                ).props(
-                                    'flat round color=negative aria-label="Excluir rota"'
+                                ).props("outline no-caps color=positive").classes(
+                                    "f2-test-button"
                                 )
-                            description = item.get("description") or "Sem descrição"
-                            ui.label(description).classes("text-sm text-slate-400")
-                            tags = [tag.strip() for tag in (item.get("tags") or "").split(",") if tag.strip()]
-                            if tags:
-                                with ui.row().classes("gap-2 flex-wrap"):
-                                    for tag in tags:
-                                        ui.badge(tag, color="grey").props("outline")
+                                test_button.mark(f"route-test-{item['id']}")
+                                manage_button = ui.button(
+                                    "Gerenciar",
+                                    icon="settings",
+                                    on_click=lambda _, q=item: start_editor(q),
+                                ).props("flat dense no-caps").classes(
+                                    "f2-manage-button"
+                                )
+                                manage_button.mark(f"route-manage-{item['id']}")
 
-            search.on("update:model-value", lambda: route_list.refresh())
-            method_filter.on("update:model-value", lambda: route_list.refresh())
-            status_filter.on("update:model-value", lambda: route_list.refresh())
             route_list()
 
         def keys_page() -> None:
@@ -1173,9 +1230,12 @@ def install_ui(fastapi_app: FastAPI) -> None:
                         ui.label(
                             "Use uma descrição que identifique o consumidor desta chave."
                         ).classes("text-sm text-slate-400")
-                        description = ui.input(
-                            "Descrição", placeholder="Ex.: Integração do ERP"
-                        ).props("outlined stack-label autofocus").classes("w-full")
+                        with form_field("Descrição"):
+                            description = ui.input(
+                                placeholder="Ex.: Integração do ERP"
+                            ).props(
+                                'outlined dense autofocus aria-label="Descrição"'
+                            ).classes("w-full")
                         description.mark("key-description")
                     with ui.row().classes(
                         "w-full justify-end gap-2 px-6 py-4 border-t border-slate-700"
@@ -1240,9 +1300,12 @@ def install_ui(fastapi_app: FastAPI) -> None:
                 ):
                     with ui.column().classes("w-full gap-4 p-6"):
                         ui.label("Editar Access Key").classes("text-xl font-semibold")
-                        description = ui.input(
-                            "Descrição", value=key["description"] or ""
-                        ).props("outlined stack-label autofocus").classes("w-full")
+                        with form_field("Descrição"):
+                            description = ui.input(
+                                value=key["description"] or ""
+                            ).props(
+                                'outlined dense autofocus aria-label="Descrição"'
+                            ).classes("w-full")
                         active = ui.switch("Chave ativa", value=key["is_active"])
                     with ui.row().classes(
                         "w-full justify-end gap-2 px-6 py-4 border-t border-slate-700"

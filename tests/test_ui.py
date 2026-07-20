@@ -54,6 +54,7 @@ async def test_ui_route_workspace_and_discard_confirmation(user: User) -> None:
     await user.should_see("Configuração geral")
     await user.should_see(marker="route-path")
     await user.should_see(marker="route-sql")
+    await user.should_not_see(marker="route-delete")
 
     user.find(marker="parameter-add").click()
     await user.should_see("Detalhes opcionais")
@@ -73,6 +74,59 @@ async def test_ui_sql_parameter_detection_is_live(user: User) -> None:
     user.find(marker="route-sql").type(":cliente_id ")
     await user.should_see("1 parâmetro detectado: :CLIENTE_ID", retries=10)
     await user.should_see("cliente_id")
+
+
+async def test_ui_route_list_management_and_delete(user: User) -> None:
+    from app.core.query_service import QueryService
+
+    query_id = QueryService.save_query_configuration(
+        None,
+        {
+            "route_path": "/ui-list-route",
+            "method": "GET",
+            "query_sql": "select 1 from rdb$database",
+            "description": "Rota sintética para validar a nova listagem",
+            "tags": "agenda, interno, leitura",
+            "is_active": True,
+        },
+        [],
+    )
+    try:
+        await _login(user)
+        user.find(marker="nav-routes").click()
+
+        await user.should_see("/ui-list-route")
+        await user.should_see("Rota sintética para validar a nova listagem")
+        await user.should_see("Ativa")
+        await user.should_see("agenda")
+        await user.should_see("+2")
+        await user.should_not_see("interno")
+
+        user.find(marker="route-search").type("rota-que-nao-existe")
+        await user.should_see("Nenhuma rota encontrada")
+        user.find(marker="route-search").clear()
+        await user.should_see("/ui-list-route")
+
+        user.find(marker=f"route-test-{query_id}").click()
+        await user.should_see("Testar rota")
+        user.find(marker="route-test-close").click()
+
+        user.find(marker=f"route-manage-{query_id}").click()
+        await user.should_see("Editar rota")
+        await user.should_see(marker="route-delete")
+
+        user.find(marker="route-delete").click()
+        await user.should_see("Excluir rota?")
+        user.find(marker="confirm-cancel").click()
+        assert QueryService.get_query_by_id(query_id) is not None
+
+        user.find(marker="route-delete").click()
+        user.find(marker="confirm-apply").click()
+        await user.should_see("Cadastre e teste os comandos Firebird expostos pela API.")
+        await user.should_not_see("/ui-list-route")
+        assert QueryService.get_query_by_id(query_id) is None
+    finally:
+        QueryService.delete_query(query_id)
 
 
 async def test_ui_access_key_creation_shows_secret_once(user: User) -> None:

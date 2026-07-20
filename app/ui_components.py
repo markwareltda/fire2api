@@ -28,6 +28,8 @@ THEME_CSS = """
   --f2-positive: #20a575;
   --f2-negative: #fb7185;
   --f2-warning: #fbbf24;
+  --f2-input-bg: #040b18;
+  --f2-input-border: #18243a;
 }
 html { scroll-behavior: smooth; }
 body, .q-layout, .q-page, .nicegui-content {
@@ -94,8 +96,36 @@ body { font-size: 14px; line-height: 1.5; }
 .f2-alert-success { background: #102a22; border-color: #28604d; color: #d1fae5; }
 .f2-alert-warning { background: #30240d; border-color: #6f5319; color: #fef3c7; }
 .f2-metric { min-height: 124px; }
-.f2-route-card { transition: background .15s ease, border-color .15s ease; }
-.f2-route-card:hover { background: var(--f2-surface-raised) !important; border-color: var(--f2-border-strong); }
+.f2-route-list {
+  overflow: hidden; border: 1px solid var(--f2-border); border-radius: 10px;
+  background: #0a1322;
+}
+.f2-route-row {
+  display: grid;
+  grid-template-columns: 56px minmax(120px, .9fr) minmax(170px, 1.6fr) 80px minmax(90px, auto) auto;
+  align-items: center; gap: 12px; min-height: 68px; padding: 12px;
+  border-bottom: 1px solid var(--f2-border);
+  transition: background .15s ease;
+}
+.f2-route-row:last-child { border-bottom: 0; }
+.f2-route-row:hover { background: rgb(255 255 255 / 3%); }
+.f2-route-path {
+  width: fit-content; max-width: 100%; padding: 3px 7px; border-radius: 4px;
+  background: var(--f2-input-bg); color: var(--f2-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.f2-route-description { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.f2-route-actions { justify-self: end; }
+.f2-route-actions .q-btn__content { flex-wrap: nowrap; }
+.f2-test-button { padding-inline: 14px; }
+.f2-test-button .q-icon.on-left { margin-right: 8px; }
+.f2-manage-button {
+  background: var(--f2-input-bg) !important; border: 1px solid var(--f2-border);
+  color: var(--f2-text) !important; padding-inline: 14px;
+}
+.f2-manage-button .q-icon.on-left { margin-right: 8px; }
+.f2-danger-zone { background: #241018 !important; border-color: #71313f !important; }
 .f2-key-card { transition: background .15s ease, border-color .15s ease; }
 .f2-key-card:hover { background: var(--f2-surface-raised) !important; border-color: var(--f2-border-strong); }
 .f2-key-prefix {
@@ -112,11 +142,19 @@ body { font-size: 14px; line-height: 1.5; }
 }
 .f2-table th { color: var(--f2-muted) !important; font-weight: 600; }
 .f2-table td, .f2-table th { border-color: var(--f2-border) !important; }
+.f2-field-label {
+  color: #d8dee9 !important; font-size: 13px; font-weight: 600; line-height: 1.25;
+}
 .q-field--dark .q-field__control, .q-field__control {
-  background: var(--f2-surface-muted) !important;
+  background: var(--f2-input-bg) !important;
   color: var(--f2-text) !important;
   border-radius: 8px;
-  min-height: 42px;
+  min-height: 40px;
+}
+.q-field--outlined .q-field__control:before { border-color: var(--f2-input-border) !important; }
+.q-field--outlined:hover .q-field__control:before { border-color: var(--f2-border-strong) !important; }
+.f2-field .q-field--dense .q-field__control, .f2-field .q-field--dense .q-field__marginal {
+  height: 40px; min-height: 40px;
 }
 .q-field__native, .q-field__input, .q-field__prefix, .q-field__suffix,
 .q-field__label, .q-field__marginal, .q-select__dropdown-icon,
@@ -125,6 +163,10 @@ body { font-size: 14px; line-height: 1.5; }
 .q-field__native::placeholder, .q-field__input::placeholder { color: var(--f2-subtle) !important; opacity: 1; }
 .q-field--focused .q-field__control:before, .q-field--focused .q-field__control:after {
   border-color: var(--f2-primary) !important;
+}
+.q-field--disabled .q-field__control { background: #0a1220 !important; opacity: .72; }
+.q-field--error .q-field__control:before, .q-field--error .q-field__control:after {
+  border-color: var(--f2-negative) !important;
 }
 .q-menu, .q-dialog__inner .q-card { background: var(--f2-surface) !important; color: var(--f2-text) !important; }
 .q-btn { min-height: 40px; border-radius: 8px; letter-spacing: 0; }
@@ -138,6 +180,20 @@ body { font-size: 14px; line-height: 1.5; }
 @media (max-width: 1023px) {
   .f2-page { padding: 24px; }
   .f2-sticky-bar { top: 64px; }
+  .f2-route-row {
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "method path status"
+      "description description description"
+      "tags actions actions";
+    gap: 10px 12px; padding: 14px;
+  }
+  .f2-route-method { grid-area: method; }
+  .f2-route-path { grid-area: path; }
+  .f2-route-description { grid-area: description; white-space: normal; }
+  .f2-route-status { grid-area: status; }
+  .f2-route-tags { grid-area: tags; }
+  .f2-route-actions { grid-area: actions; }
 }
 @media (max-width: 639px) {
   .f2-page { padding: 16px; }
@@ -214,6 +270,13 @@ def section_card(classes: str = "") -> Iterator[Any]:
         yield card
 
 
+@contextmanager
+def form_field(label: str, classes: str = "") -> Iterator[Any]:
+    with ui.column().classes(f"f2-field w-full gap-1.5 {classes}") as field:
+        ui.label(label).classes("f2-field-label")
+        yield field
+
+
 def page_header(
     title: str,
     subtitle: str,
@@ -280,14 +343,16 @@ def confirm_dialog(
             ui.label(title).classes("text-xl font-semibold")
             ui.label(message).classes("text-sm text-slate-400 whitespace-normal")
         with ui.row().classes("w-full justify-end gap-2 px-6 py-4 border-t border-slate-700"):
-            ui.button("Cancelar", on_click=dialog.close).props("flat no-caps")
+            cancel_button = ui.button("Cancelar", on_click=dialog.close).props("flat no-caps")
+            cancel_button.mark("confirm-cancel")
 
             def apply() -> None:
                 dialog.close()
                 on_confirm()
 
             props = "unelevated no-caps color=negative" if danger else "unelevated no-caps"
-            ui.button(confirm_label, on_click=apply).props(props)
+            confirm_button = ui.button(confirm_label, on_click=apply).props(props)
+            confirm_button.mark("confirm-apply")
     dialog.open()
 
 
