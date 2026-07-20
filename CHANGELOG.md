@@ -2,6 +2,7 @@
 
 ## 0.0.1 - 2026-07-15
 
+- Script independente para incrementar `project.version`, criar o commit de versão e adicionar a tag Git correspondente com validação de árvore limpa.
 - Painel administrativo com lista de rotas compacta e responsiva, campos simplificados e exclusão movida para uma zona de perigo no editor.
 - Fluxo principal do Docker Compose simplificado: `docker compose up -d` agora recompila a imagem local antes de iniciar ou recriar o serviço.
 - README reestruturado com apresentação profissional, instalação Docker-first, atualização, operação e avisos de segurança.

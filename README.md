@@ -128,6 +128,19 @@ Generate an administrative key with `openssl rand -base64 48`, place it in `.env
 
 For development and repository checks, install `requirements.txt` instead. It includes the runtime packages plus the test, type-checking, linting, lock-maintenance, and audit tools.
 
+### Versioning releases
+
+Run the standalone versioning helper from the repository root with a completely clean Git working tree:
+
+```bash
+python version.py --major
+python version.py --minor
+python version.py --patch
+python version.py 1.2.3
+```
+
+The options are mutually exclusive. The helper updates `[project].version` in `pyproject.toml`, creates a commit named `chore: bump version to X.Y.Z`, and adds the local tag `vX.Y.Z`. It does not push the commit or tag.
+
 ## Updating
 
 The SQLite metastore contains route definitions, Access Keys, execution state, and audit records. Back it up before every update using a SQLite-consistent backup procedure, or stop the service before backing up the named volume.
